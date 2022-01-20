@@ -1,0 +1,29 @@
+{
+  "name": "react18Test",
+  "version": "1.0.0",
+  "description": "reactTest",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "webpack serve --env=development",
+    "build": "webpack --env=production",
+    "start": "webpack"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.8",
+    "@types/react": "^17.0.38",
+    "@types/react-dom": "^17.0.11",
+    "html-webpack-plugin": "^5.5.0",
+    "typescript": "^4.5.4",
+    "webpack": "^5.65.0",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.7.2"
+  },
+  "dependencies": {
+    "axios": "^0.24.0",
+    "react": "^18.0.0-beta-24dd07bd2-20211208",
+    "react-dom": "^18.0.0-beta-24dd07bd2-20211208",
+    "source-map-loader": "^3.0.1",
+    "ts-loader": "^9.2.6"
+  }
+}
