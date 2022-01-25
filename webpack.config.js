@@ -29,8 +29,9 @@ module.exports = (env, options)=> {
             host:"localhost",
             port:3003,
             hot:true,
+            historyApiFallback:true,
             proxy:[{
-                context: ["/**"],
+                context: ["/api/**"],
                 target: "http://localhost:8085"
             }]
         },
