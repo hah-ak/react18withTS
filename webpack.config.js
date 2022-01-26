@@ -32,7 +32,8 @@ module.exports = (env, options)=> {
             historyApiFallback:true,
             proxy:[{
                 context: ["/api/**"],
-                target: "http://localhost:8085"
+                target: "http://localhost:8085",
+                changeOrigin:true
             }]
         },
 

@@ -8,17 +8,29 @@ interface Props {
     redirectOBJ:RouteObject
 }
 
+
 export const GetCode = (props: Props) => {
     const [code, setCode] = useSearchParams();
+    
     const navigate = useNavigate()
-    const getToken = async (params:URLSearchParams) => {
-        const get = await axios.get(`/api/blizzard/setToken?code=${code}`)
-        return get;
+    const getToken = async (params:string|null) => {
+        const finalResult = {result:""}
+        try {
+            if (params === null) {
+                throw "params null"
+            }
+            const returnValue = await axios.get(`/api/blizzard/setToken?code=${params}`,{withCredentials:true})
+            finalResult.result = returnValue.data
+            axios.defaults.headers.common['BLIZZARD'] = `${finalResult.result}`
+        } catch (e:any) {
+            finalResult.result = e
+        }
+        
+        return finalResult.result;
     }
 
-    getToken(code).then(res=>{
-        console.log(res.data)
-        navigate(-1)
+    getToken(code.get("code")).then(res=>{
+        navigate("/");
     })
 
     const loadTemplate = () =>{
