@@ -1,26 +1,27 @@
-import axios from 'axios'
-import React, { useEffect, useReducer, useState } from 'react'
-import { userDataType } from './BlizzardLogin'
+import React from 'react';
+import axios from 'axios';
+import { userDataType } from './BlizzardLogin';
 
-interface Props {
-    userInfo:userDataType|undefined
-}
-
-const reducer = () => {
-
-}
-export const UserInfo = (props: Props) => {
-    console.log(props.userInfo)
-    useEffect(()=>{
+const UserInfo = async ():Promise<JSX.Element> => {
     
-    },[])
-    
-    // document.body.insertAdjacentHTML("beforebegin",props.userInfo)
-    return (
-        <div>
-            aaaa
-        </div>
-
-        
-    )
+     
+    try {
+        const getData:Promise<userDataType> = await axios.get("/api/blizzard/blizzardUserInfo").then(res => res.data)
+        return (
+            <>
+                <div>
+                    {getData}
+                </div>
+            </>
+        )
+    } catch (e) {
+        return (
+            <div>
+                fail
+            </div>
+        )
+    }
 }
+
+
+export default UserInfo

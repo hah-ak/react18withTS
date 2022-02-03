@@ -1,16 +1,17 @@
 import axios from 'axios'
-import React, { Component, ComponentType, FunctionComponent, lazy, Suspense, useState } from 'react'
+import React, { Component, ComponentType, FunctionComponent, lazy, Suspense, useEffect, useState } from 'react'
 import { sc2 } from '../../types/Sc2Types'
-import { UserInfo } from './UserInfo'
+import CreateUser from '../Test/CreateUser'
+import UserTest from '../Test/UserTest'
 
 interface Props {
 
 }
-const fallBackHtml = ():JSX.Element => {
+export const FallBackHtml = (props:Props):JSX.Element => {
     return (
         <>
         <div>
-            loadding.....
+            loading.....
         </div>
         </>
     )
@@ -18,15 +19,12 @@ const fallBackHtml = ():JSX.Element => {
 interface userDataType {
     sub:string,
     id:Number,
-    battleTag:string
+    battletag:string
 }
-const getUserInfo= lazy(() => import('./UserInfo'))
-    // const rdata = axios.get("/api/blizzard/blizzardUserInfo")
-    // return userData;
-
 const axiosHeaders = () => {
     return axios.defaults.headers.common["BLIZZARD"];
 }
+// const otherComponent = React.lazy(() => import('./UserInfo').then(res=> ({default:res.UserInfo})))
 const BlizzardLogin = (props: Props) => {
     const [sc2data, setsc2] = useState<sc2>()
     const [userInfo, setUserInfo] = useState<userDataType>();
@@ -48,23 +46,31 @@ const BlizzardLogin = (props: Props) => {
     }
     const viewPage = ():JSX.Element => {
         if (blizzardHeader) {
-            getUserInfo(()=>setUserInfo); 
-            return (
-            <>
-            <div>
-                Blizzard Login Success
-            </div>
-            <Suspense fallback={fallBackHtml()}>
-                <UserInfo userInfo={userInfo}/>
-            </Suspense>
-            </>
+            useEffect(()=>{
+                axios.get("/api/blizzard/blizzardUserInfo").then(res => {console.log(res.data);setUserInfo(res.data)}).catch()
+            },[])
+            if (userInfo) {
+                return (
+                    <div>
+                        Blizzard Login Success
+                        {userInfo.battletag}
+                    </div>
+                    )
+            } else {
+                return (
+                    <FallBackHtml />
+                )
+                    
+            }
             
-            )
         } else {
-            return (     
+            return ( 
+                <>    
             <div onClick={()=>blizzardLogin()}>
                 Blizzard LogIn
             </div>
+            <UserTest/>
+            </>
             )
         }
     }
