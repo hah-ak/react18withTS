@@ -26,5 +26,5 @@ const CreateUser = ({onChange, onCreate, username, email}:Props) => {
 </div>;
 };
 
-export default CreateUser;
+export default React.memo(CreateUser);
 

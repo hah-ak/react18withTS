@@ -66,9 +66,9 @@ const BlizzardLogin = (props: Props) => {
         } else {
             return ( 
                 <>    
-            <div onClick={()=>blizzardLogin()}>
+            {/* <div onClick={()=>blizzardLogin()}>
                 Blizzard LogIn
-            </div>
+            </div> */}
             <UserTest/>
             </>
             )
