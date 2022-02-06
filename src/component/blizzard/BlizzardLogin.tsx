@@ -1,8 +1,10 @@
 import axios from 'axios'
+import QueryString from 'qs'
 import React, { Component, ComponentType, FunctionComponent, lazy, Suspense, useEffect, useState } from 'react'
 import { sc2 } from '../../types/Sc2Types'
-import CreateUser from '../Test/CreateUser'
+import { getCookie } from '../../utils/cookieUtil'
 import UserTest from '../Test/UserTest'
+import UserInfo from './UserInfo'
 
 interface Props {
 
@@ -21,31 +23,33 @@ interface userDataType {
     id:Number,
     battletag:string
 }
-const axiosHeaders = () => {
-    return axios.defaults.headers.common["BLIZZARD"];
-}
+
 // const otherComponent = React.lazy(() => import('./UserInfo').then(res=> ({default:res.UserInfo})))
 const BlizzardLogin = (props: Props) => {
     const [sc2data, setsc2] = useState<sc2>()
     const [userInfo, setUserInfo] = useState<userDataType>();
-    const [blizzardHeader, setBlizzardHeader] = useState(()=>axiosHeaders());
-    const getBlizzardToken = async ():Promise<any[]> => {
+    const [BLIZZARD, setBLIZZARD] = useState(()=>getCookie("ACCESS_TOKEN"))
+    const getBlizzardToken = async ():Promise<any[]|void> => {
         try {
             const datas = await axios.all([axios.get("/api/blizzard/blizzardLogin")])
-            return Promise.resolve(datas)
+            const returnValue = datas[0].data
+            // const state = new URLSearchParams(returnValue).get("state")
+            const qss = QueryString.parse(returnValue,{ignoreQueryPrefix:true})
+            const state = qss.state
+            
+            if (state && typeof state === 'string') localStorage.setItem("state",state)
+            window.location.href=returnValue
         } catch (e) {
             return Promise.reject(e)
         }
     }
     
-    const blizzardLogin = async () => {
-        const returnValue = await getBlizzardToken()
-        returnValue.map((value:sc2|any,index)=>{
-            window.location.href = value.data
-        })
+    const blizzardLogin = () => {
+        getBlizzardToken().catch(e=>console.log(e))
     }
     const viewPage = ():JSX.Element => {
-        if (blizzardHeader) {
+        
+        if (BLIZZARD) {
             useEffect(()=>{
                 axios.get("/api/blizzard/blizzardUserInfo").then(res => {console.log(res.data);setUserInfo(res.data)}).catch()
             },[])
@@ -53,7 +57,7 @@ const BlizzardLogin = (props: Props) => {
                 return (
                     <div>
                         Blizzard Login Success
-                        {userInfo.battletag}
+                        <UserInfo userData={userInfo}/>
                     </div>
                     )
             } else {
@@ -66,9 +70,9 @@ const BlizzardLogin = (props: Props) => {
         } else {
             return ( 
                 <>    
-            {/* <div onClick={()=>blizzardLogin()}>
+            <div onClick={()=>blizzardLogin()}>
                 Blizzard LogIn
-            </div> */}
+            </div>
             <UserTest/>
             </>
             )

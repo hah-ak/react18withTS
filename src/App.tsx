@@ -29,7 +29,7 @@ const Routers = () => {
 }
 
 export const App:React.FC = (props: Props):JSX.Element => {
-    cookieInContext()
+    
     return (
         <Routers/>
     )

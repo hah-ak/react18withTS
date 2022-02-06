@@ -2,15 +2,19 @@ import React from 'react';
 import axios from 'axios';
 import { userDataType } from './BlizzardLogin';
 
-const UserInfo = async ():Promise<JSX.Element> => {
+interface Props {
+    userData:userDataType
+}
+
+const UserInfo = (props:Props):JSX.Element => {
     
      
     try {
-        const getData:Promise<userDataType> = await axios.get("/api/blizzard/blizzardUserInfo").then(res => res.data)
+        
         return (
             <>
                 <div>
-                    {getData}
+                    {props.userData}
                 </div>
             </>
         )
