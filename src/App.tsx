@@ -1,5 +1,5 @@
 
-import axios from 'axios';
+import axios, { AxiosPromise } from 'axios';
 import React, { Suspense, useEffect, useState } from 'react'
 import { BrowserRouter, Route, RouteMatch, RouteObject, Router, RouterProps, Routes, useRoutes } from 'react-router-dom';
 import { GetCode } from './component/blizzard/oauth/GetCode';
@@ -10,13 +10,8 @@ interface Props {
 }
 
 const AccessTokenContext = React.createContext("accessToken")
-const cookieInContext = ():void => {
-    const accessTokenCookie = document.cookie.match("ACCESS_TOKEN")
-    const getInput = accessTokenCookie ? accessTokenCookie.input : null
-    const getToken = getInput ? getInput.split("=")[1] : ""
-    if (getToken !== "") {
-        axios.defaults.headers.common["BLIZZARD"] = getToken
-    }
+const accessCheck = async ():Promise<void> => {
+    const getdata = await axios.get("/api/accessCheck/check")
 }
 const Routers = () => {
     const mainRoute:RouteObject = { path: "/",element: <BlizzardLogin /> }
@@ -29,7 +24,7 @@ const Routers = () => {
 }
 
 export const App:React.FC = (props: Props):JSX.Element => {
-    
+    accessCheck()
     return (
         <Routers/>
     )

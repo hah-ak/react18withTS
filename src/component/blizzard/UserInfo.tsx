@@ -14,7 +14,9 @@ const UserInfo = (props:Props):JSX.Element => {
         return (
             <>
                 <div>
-                    {props.userData}
+                    battletag:{props.userData.battletag}<br/>
+                    id:{props.userData.id}<br/>
+                    sub:{props.userData.sub}
                 </div>
             </>
         )

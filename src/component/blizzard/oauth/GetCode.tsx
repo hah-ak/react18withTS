@@ -24,10 +24,9 @@ export const GetCode = (props: Props) => {
             }
             const qss = QueryString.parse(location.href)
             const state = qss.state
-            console.log(state)
 
             const localState = localStorage.getItem("state")
-            console.log(localState, params.state)
+            
             for (let index = 0; index < params.state.length; index++) {
                 if (params.state.charAt(index) !== localState?.charAt(index)) {
                     console.log(params.state.charAt(index),"storage" + localState?.charAt(index))
