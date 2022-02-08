@@ -1,10 +1,11 @@
-import axios, { Axios } from 'axios'
+import axios from 'axios'
 import QueryString from 'qs'
-import React, { Component, ComponentType, FunctionComponent, lazy, Reducer, ReducerAction, ReducerState, Suspense, useEffect, useReducer, useState } from 'react'
-import { sc2 } from '../../types/Sc2Types'
+import React, { Reducer, useEffect, useReducer, useState } from 'react'
 import { getCookie } from '../../utils/cookieUtil'
 import UserTest from '../Test/UserTest'
-import { Players } from './sc2/Players'
+import OverWatchPlayer from './overWatch/OverWatchPlayer'
+import PageChooseButton from './PageChooseButton'
+import Sc2Main from './sc2/Sc2Main'
 import UserInfo from './UserInfo'
 
 interface Props {
@@ -38,13 +39,15 @@ type sc2Page = "sc2"
 
 type pageStateType = overwatchPage | sc2Page
 interface pageReducerStateType {
-    page: pageStateType
+    page: pageStateType,
+    pageElement:(params:any)=>JSX.Element
 }
 
 type overwatchPageType = "OVERWATCH_PAGE"
 type sc2PageType = "SC2_PAGE"
+type pageActionType=overwatchPageType|sc2PageType
 interface pageReducerActionType {
-    type:overwatchPageType|sc2PageType
+    type:pageActionType
     page:pageStateType
 }
 
@@ -53,11 +56,13 @@ const pageReducer:Reducer<pageReducerStateType,pageReducerActionType> = (state,a
     switch (action.type) {
         case "OVERWATCH_PAGE":
             state.page = action.page
+            state.pageElement = (userInfo:userDataType):JSX.Element=><OverWatchPlayer userInfo={userInfo}/>
             return {
                 ...state
             }
         case "SC2_PAGE":
             state.page = action.page
+            state.pageElement = (userInfo:userDataType):JSX.Element=><Sc2Main userInfo={userInfo}/>
             return {
                 ...state
             }
@@ -69,23 +74,23 @@ const pageReducer:Reducer<pageReducerStateType,pageReducerActionType> = (state,a
 }
 
 const reducerInit:pageReducerStateType = {
-    page:'sc2'
+    page:'sc2',
+    pageElement:(userInfo:userDataType):JSX.Element => <Sc2Main userInfo={userInfo}/>
 }
+const stateList:[pageStateType, pageActionType][] = [['overwatch','OVERWATCH_PAGE'],['sc2','SC2_PAGE']]
 
-// const otherComponent = React.lazy(() => import('./UserInfo').then(res=> ({default:res.UserInfo})))
 const BlizzardLogin = (props: Props) => {
-    const [sc2data, setsc2] = useState<sc2>()
+   
     const [userInfo, setUserInfo] = useState<userDataType>();
     const [BLIZZARD, setBLIZZARD] = useState(()=>getCookie("ACCESS_TOKEN"))
-    const [players, setPlayers] = useState<playerType[]>();
 
     const [page,dispatch] = useReducer<Reducer<pageReducerStateType,pageReducerActionType>>(pageReducer,reducerInit);
-
+    
     const getBlizzardToken = async ():Promise<any[]|void> => {
         try {
             const datas = await axios.all([axios.get("/api/blizzard/blizzardLogin")])
             const returnValue = datas[0].data
-            // const state = new URLSearchParams(returnValue).get("state")
+       
             const qss = QueryString.parse(returnValue,{ignoreQueryPrefix:true})
             const state = qss.state
             
@@ -100,54 +105,32 @@ const BlizzardLogin = (props: Props) => {
         getBlizzardToken().catch(e=>console.log(e))
     }
 
-    const onClickSc2Button = async ():Promise<boolean> => {
-        try {
-            const getdata = await axios.get(`/api/blizzard/sc2Player?profileId=${userInfo?.id}`)
-            setPlayers(getdata.data)
-            return true
-        } catch (e) {
-            return false;
-        }
-        
+    if (BLIZZARD) {
+        useEffect(()=>{
+            axios.get("/api/blizzard/blizzardUserInfo").then(res => {setUserInfo(res.data)}).catch()
+        },[])
     }
-    
-    const viewPage = ():JSX.Element => {
-        
-        if (BLIZZARD) {
-            useEffect(()=>{
-                axios.get("/api/blizzard/blizzardUserInfo").then(res => {console.log(res.data);setUserInfo(res.data)}).catch()
-            },[])
-            if (userInfo) {
-                return (
-                    <div>
-                        Blizzard Login Success
-                        <div></div>
-                        <UserInfo userData={userInfo}/>
-                        <button onClick={onClickSc2Button}>sc2Player</button>
-                        {players ? <Players players={players}/> : <div></div>}
+
+    return (
+        <>
+                {BLIZZARD && userInfo 
+                    ?   <div>
+                            Blizzard Login Success
+                            <UserInfo userData={userInfo}/>
+                            <PageChooseButton stateList={stateList} onPageClick={dispatch}/>
+                            {page.pageElement(userInfo)}
+                        </div>
+                    : BLIZZARD 
+                    ?<FallBackHtml />
+                    :<>    
+                    <div onClick={()=>blizzardLogin()}>
+                        Blizzard LogIn
                     </div>
-                    )
-            } else {
-                return (
-                    <FallBackHtml />
-                )
-                    
-            }
-            
-        } else {
-            return ( 
-                <>    
-            <div onClick={()=>blizzardLogin()}>
-                Blizzard LogIn
-            </div>
-            <UserTest/>
-            </>
-            )
-        }
-    }
-    
-    return viewPage()
+                    <UserTest/>
+                    </>}
+        </>
+    )
 }
 
-export default BlizzardLogin
-export {userDataType,playerType}
+export default React.memo(BlizzardLogin)
+export {userDataType,playerType,pageStateType,pageReducerActionType,pageActionType}

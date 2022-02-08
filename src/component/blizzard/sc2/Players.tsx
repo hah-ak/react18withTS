@@ -9,7 +9,7 @@ type playerProps = {
     player:playerType
 }
 
-export const Player = ({player}:playerProps):JSX.Element => {
+export const Player = React.memo(({player}:playerProps):JSX.Element => {
     
     const onClickImg = async (sendPlayer:playerType):Promise<void> => {
         const response = await axios.post(`/api/blizzard/sc2Profile`,{...sendPlayer})
@@ -20,9 +20,9 @@ export const Player = ({player}:playerProps):JSX.Element => {
             <img src={player.avatarUrl} alt="" width={180} height={180} onClick={()=>onClickImg(player)}/>
         </div>
     )
-}
+})
 
-export const Players = ({players}: Props):JSX.Element => {
+export const Players = React.memo(({players}: Props):JSX.Element => {
     return (
         <div>
             {players.map((value:playerType,index:number)=>{
@@ -31,7 +31,4 @@ export const Players = ({players}: Props):JSX.Element => {
         </div>
         
     )
-    
-    
-  
-};
+})

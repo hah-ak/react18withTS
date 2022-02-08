@@ -7,27 +7,17 @@ interface Props {
 }
 
 const UserInfo = (props:Props):JSX.Element => {
-    
-     
-    try {
-        
-        return (
-            <>
-                <div>
-                    battletag:{props.userData.battletag}<br/>
-                    id:{props.userData.id}<br/>
-                    sub:{props.userData.sub}
-                </div>
-            </>
-        )
-    } catch (e) {
-        return (
+
+    return (
+    <>
             <div>
-                fail
+                battletag:{props.userData.battletag}<br/>
+                id:{props.userData.id}<br/>
+                sub:{props.userData.sub}
             </div>
-        )
-    }
+        </>
+    )
 }
 
 
-export default UserInfo
+export default React.memo(UserInfo)
