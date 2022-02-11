@@ -14,7 +14,7 @@ const accessCheck = async ():Promise<void> => {
     const getdata = await axios.get("/api/accessCheck/check")
 }
 const Routers = () => {
-    const mainRoute:RouteObject = { path: "/",element: <BlizzardLogin /> }
+    const mainRoute:RouteObject = { path: "/*",element: <BlizzardLogin /> }
     const getCodeRoute = { path: "/getCode", children:[{path:':code'}],element: <GetCode redirectOBJ={mainRoute}/> }
     const routers = useRoutes([
       mainRoute,

@@ -7,7 +7,7 @@ interface Props {
 }
 
 const UserInfo = (props:Props):JSX.Element => {
-
+    
     return (
     <>
             <div>

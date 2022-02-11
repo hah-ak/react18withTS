@@ -1,3 +1,4 @@
 import { createStoreHook } from "react-redux";
 
-const store = createStoreHook()
+
+const store2 = createStoreHook();

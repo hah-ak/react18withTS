@@ -1,6 +1,7 @@
 import axios from 'axios'
 import QueryString from 'qs'
-import React, { Reducer, useEffect, useReducer, useState } from 'react'
+import React, { Reducer, useCallback, useEffect, useMemo, useReducer, useState } from 'react'
+import { BrowserRouterProps, NavigateOptions, NavigateProps, NavigationType, PathRouteProps, RouteObject, RouterProps, Routes, To, useNavigate, useRoutes } from 'react-router-dom'
 import { getCookie } from '../../utils/cookieUtil'
 import UserTest from '../Test/UserTest'
 import OverWatchPlayer from './overWatch/OverWatchPlayer'
@@ -34,13 +35,11 @@ interface playerType {
     regionId:number,
     realmId:number
 }
-type overwatchPage = "overwatch"
-type sc2Page = "sc2"
 
-type pageStateType = overwatchPage | sc2Page
+type pageStateType = "overwatch" | "sc2"
 interface pageReducerStateType {
     page: pageStateType,
-    pageElement:(params:any)=>JSX.Element
+    router:{to:To,options?:NavigateOptions}
 }
 
 type overwatchPageType = "OVERWATCH_PAGE"
@@ -56,13 +55,13 @@ const pageReducer:Reducer<pageReducerStateType,pageReducerActionType> = (state,a
     switch (action.type) {
         case "OVERWATCH_PAGE":
             state.page = action.page
-            state.pageElement = (userInfo:userDataType):JSX.Element=><OverWatchPlayer userInfo={userInfo}/>
+            state.router = {...state.router,to:action.page,options:{replace:true}}
             return {
                 ...state
             }
         case "SC2_PAGE":
             state.page = action.page
-            state.pageElement = (userInfo:userDataType):JSX.Element=><Sc2Main userInfo={userInfo}/>
+            state.router = {...state.router,to:action.page,options:{replace:true}}
             return {
                 ...state
             }
@@ -75,15 +74,24 @@ const pageReducer:Reducer<pageReducerStateType,pageReducerActionType> = (state,a
 
 const reducerInit:pageReducerStateType = {
     page:'sc2',
-    pageElement:(userInfo:userDataType):JSX.Element => <Sc2Main userInfo={userInfo}/>
+    router:{to:'sc2',options:{replace:true}}
+}
+interface routerParam {
+    userInfo:userDataType
 }
 const stateList:[pageStateType, pageActionType][] = [['overwatch','OVERWATCH_PAGE'],['sc2','SC2_PAGE']]
-
+const Router = ({userInfo}:routerParam) => {
+    const ovRouter:RouteObject = {path:'/overwatch',element:<OverWatchPlayer userInfo={userInfo}/>}
+    const sc2Router:RouteObject = {path:'/sc2',element:<Sc2Main userInfo={userInfo}/>}
+    const routes:RouteObject[] =[ovRouter,sc2Router]
+    const routers = useRoutes(routes)
+    return routers
+}
 const BlizzardLogin = (props: Props) => {
-   
-    const [userInfo, setUserInfo] = useState<userDataType>();
+    
+    const [userInfo, setUserInfo] = useState<userDataType>()
     const [BLIZZARD, setBLIZZARD] = useState(()=>getCookie("ACCESS_TOKEN"))
-
+    const navigate = useNavigate()
     const [page,dispatch] = useReducer<Reducer<pageReducerStateType,pageReducerActionType>>(pageReducer,reducerInit);
     
     const getBlizzardToken = async ():Promise<any[]|void> => {
@@ -110,15 +118,31 @@ const BlizzardLogin = (props: Props) => {
             axios.get("/api/blizzard/blizzardUserInfo").then(res => {setUserInfo(res.data)}).catch()
         },[])
     }
-
+    const onPageClick = useCallback((param)=>{
+        dispatch(param)
+    },[page.page])
+    const resultPage = () => {
+        if (userInfo) {
+            switch(page.page) {
+                case "overwatch":
+                    return <OverWatchPlayer userInfo={userInfo} />
+                case "sc2":
+                    return <Sc2Main userInfo={userInfo}/>
+                default :
+                    return null;
+            }
+        }
+        
+    }
     return (
         <>
                 {BLIZZARD && userInfo 
                     ?   <div>
                             Blizzard Login Success
                             <UserInfo userData={userInfo}/>
-                            <PageChooseButton stateList={stateList} onPageClick={dispatch}/>
-                            {page.pageElement(userInfo)}
+                            <PageChooseButton stateList={stateList} onPageClick={onPageClick}/>
+                            {/* <Router userInfo={userInfo}/> */}
+                            {resultPage()}
                         </div>
                     : BLIZZARD 
                     ?<FallBackHtml />
@@ -127,6 +151,7 @@ const BlizzardLogin = (props: Props) => {
                         Blizzard LogIn
                     </div>
                     <UserTest/>
+                    <OverWatchPlayer userInfo={userInfo} />
                     </>}
         </>
     )

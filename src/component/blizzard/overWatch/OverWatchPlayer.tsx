@@ -1,10 +1,10 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import React, { useRef, useState } from 'react';
 import { userDataType } from '../BlizzardLogin';
 import OverWatchProfile from './OverWatchProfile';
 
 type Props = {
-    userInfo:userDataType
+    userInfo?:userDataType
 };
 interface stats {
     eliminationAvg:number,
@@ -61,12 +61,16 @@ const OverWatchPlayer = (props: Props) => {
     const platformRef = useRef<HTMLSelectElement>();
     const battleTagRef = useRef<HTMLInputElement>();
     
-    const getPlayer = async ():Promise<any> => {
+    const getPlayer = async ():Promise<void> => {
         const urlTag = battleTagRef.current?.value.replace("#","-")
         
         try {
-            const getData = await axios.get(`https://ow-api.com/v1/stats/${platformRef.current?.value}/${regionRef.current?.value}/${urlTag}/profile`,{withCredentials:false})
-            setOWplayer(getData.data)
+            const getData:AxiosResponse<OWPlayerType> = await axios.get(`https://ow-api.com/v1/stats/${platformRef.current?.value}/${regionRef.current?.value}/${urlTag}/profile`,{withCredentials:false})
+            if (getData.status === 200) {
+                const {data} = await axios.post("/api/blizzard/owPlayer/insert",getData.data)
+                setOWplayer(getData.data)
+            }
+            
         } catch(e) {
             console.log(e)
         }
@@ -74,7 +78,7 @@ const OverWatchPlayer = (props: Props) => {
 
     return (
         <div>
-            <input type="text" placeholder='battleTag' defaultValue={props.userInfo.battletag} ref={(el:HTMLInputElement) => battleTagRef.current = el}/>
+            <input type="text" placeholder='battleTag' defaultValue={props.userInfo?.battletag} ref={(el:HTMLInputElement) => battleTagRef.current = el}/>
             <label htmlFor={regionRef.current?.accessKeyLabel}>region설정</label>
             <select name='region' ref={(el:HTMLSelectElement) => regionRef.current=el }>
                 {Object.entries(region).map(([key,value],index)=> {
